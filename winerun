@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+SCRIPT_PATH=$( cd $(dirname ${BASH_SOURCE[0]}) && pwd )
+
+[[ $(id -u) != 0 ]] && echo "Please run this script as root or with sudo" && exit
+
+############## CONTAINER LAUNCH PARAMETERS ###############
+
+HOME_PATH="${SCRIPT_PATH}/winevnc"             #Path to the host directory, which is mounted in the home directory
+                                               #of the user 'winuser' inside the container. Default is 'path to script'/winevnc
+
+CONFIG_PATH="/home/wineuser/tm/ut/config.yaml" #Path to the TM config inside the container
+											   
+VNC_PORT=5900                                  #Port for connecting from external VNC-clients [5000-5999]
+
+PSW="PSW"                                      #Password for VNC connection
+
+SSH=false                                      #Enable|disable [true|false] SSH connection to the container
+
+SSH_PORT=2222                                  #Port for connecting from external SSH-clients [any except 22]
+
+###########################################################
+DOCKER_IMAGE="lexandr0s/wine-vnc"
+
+function prepare (){
+	need_install=0
+	dpkg -s git >/dev/null 2>&1
+	[[ $? -ne 0 ]] && need_install==1
+	dpkg -s jq >/dev/null 2>&1
+	[[ $? -ne 0 ]] && need_install==1
+
+	if [[ $need_install -ne 0 ]]; then
+		apt update
+		apt install -y git jq
+	fi
+
+[[ ! -d $HOME_PATH ]] && mkdir -p $HOME_PATH
+if [[ ! -d $HOME_PATH/tm ]]; then
+	echo -e "\n*****Install 'go-torrent-manager' to '${HOME_PATH}/tm'*****"
+	git clone https://github.com/aliasxrus/go-torrent-manager.git $HOME_PATH/tm
+	chmod +x $HOME_PATH/tm/torrent-manager-linux
+	chmod 777 $HOME_PATH/tm/ut
+fi
+
+if [[ ! -d $HOME_PATH/torrent-manager ]]; then
+	echo -e "\n*****Install 'JS torrent-manager' to '${HOME_PATH}/torrent-manager'*****"
+	git clone https://github.com/aliasxrus/torrent-manager.git $HOME_PATH/torrent-manager
+	chmod +x $HOME_PATH/torrent-manager/*.sh
+fi
+if [[ ! -f $HOME_PATH/autostart.sh ]]; then
+	echo "#!/usr/bin/env bash" > $HOME_PATH/autostart.sh
+	echo "#Specify here commands to autostart when the container start." >> $HOME_PATH/autostart.sh
+	echo "#One command per line with full path inside the container" >> $HOME_PATH/autostart.sh
+	echo "#Ex: /home/wineuser/tm/torrent-manager-linux&" >> $HOME_PATH/autostart.sh
+	chmod +x $HOME_PATH/autostart.sh
+fi
+
+if [[ ! -f $HOME_PATH/.config/autostart/autostart.desktop ]]; then
+	[[ ! -d $HOME_PATH/.config/autostart ]] && mkdir -p $HOME_PATH/.config/autostart
+cat > $HOME_PATH/.config/autostart/autostart.desktop <<\eof
+[Desktop Entry]
+Encoding=UTF-8
+Version=0.9.4
+Type=Application
+Name=autostart
+Comment=
+Exec=/home/wineuser/autostart.sh
+OnlyShowIn=XFCE;
+RunHook=0
+StartupNotify=false
+Terminal=false
+Hidden=false
+eof
+fi
+
+
+echo -e "\n*****Container is ready to running*****"
+}
+
+
+function stop (){
+cont=$(docker ps -a --filter "status=running" --filter "ancestor=${DOCKER_IMAGE}" -q)
+docker stop -t 1 $cont
+}
+
+function start () {
+	prepare
+	echo -e "\n*****Start the container*****"
+	echo "If launched successfully, the container will accept connections:" 
+	if [[ $SSH == true ]]; then
+		echo "on SSH-port ${SSH_PORT}"
+	fi
+	echo "on VNC-port ${VNC_PORT}"
+	#docker run -it \
+	docker run --detach \
+	--rm \
+	-v $HOME_PATH:/home/wineuser \
+	--network host \
+	--hostname="$(hostname)-winedocker" \
+	--env="host=$(hostname)" \
+	--env="TZ=$(cat /etc/timezone)" \
+	--env="SSH_PORT=${SSH_PORT}" \
+	--env="VNC_PORT=${VNC_PORT}" \
+	--env="SSH=${SSH}" \
+	--env="PSW=${PSW}" \
+	--env="CONFIG_PATH=${CONFIG_PATH}" \
+	"${DOCKER_IMAGE}"
+	#-v winedocker:/home/wineuser \
+}
+
+
+case $1 in
+	start)
+		start
+		exit
+		;;
+	stop)
+		stop
+		exit
+		;;
+	restart)
+		stop
+		start
+		exit
+		;;
+	prepare)
+		prepare
+		exit
+		;;
+	*)
+		echo "winerun start|stop|restart|prepare"
+		exit
+		;;
+esac
