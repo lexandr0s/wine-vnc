@@ -1,2 +1,5 @@
 # wine-vnc
-Docker container with Wine and VNC access
+Контейнер с Wine.
+Возможен доступ по VNC и SSH протоколам.
+
+# Использование:
