@@ -24,9 +24,9 @@ DOCKER_IMAGE="lexandr0s/wine-vnc"
 function prepare (){
 	need_install=0
 	dpkg -s git >/dev/null 2>&1
-	[[ $? -ne 0 ]] && need_install==1
+	[[ $? -ne 0 ]] && need_install=1
 	dpkg -s jq >/dev/null 2>&1
-	[[ $? -ne 0 ]] && need_install==1
+	[[ $? -ne 0 ]] && need_install=1
 
 	if [[ $need_install -ne 0 ]]; then
 		apt update
