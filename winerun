@@ -90,7 +90,7 @@ function start () {
 		echo "on SSH-port ${SSH_PORT}"
 	fi
 	echo "on VNC-port ${VNC_PORT}"
-	#docker run -it \
+	
 	docker run --detach \
 	--rm \
 	-v $HOME_PATH:/home/wineuser \
@@ -104,7 +104,6 @@ function start () {
 	--env="PSW=${PSW}" \
 	--env="CONFIG_PATH=${CONFIG_PATH}" \
 	"${DOCKER_IMAGE}"
-	#-v winedocker:/home/wineuser \
 }
 
 
