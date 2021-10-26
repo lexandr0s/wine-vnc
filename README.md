@@ -25,7 +25,7 @@ wget https://github.com/lexandr0s/wine-vnc/raw/main/winerun && chmod +x winerun 
 ### Допустимые команды:
 ```
 sudo ./winerun start - запуск контейнера;
-sudo ./winerun stop - останавка контейнера;
+sudo ./winerun stop - остановка контейнера;
 sudo ./winerun restart - перезапуск контейнера;
 sudo ./winerun prepare - подготовка домашней директории пользователя.
 ```
