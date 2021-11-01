@@ -85,12 +85,7 @@ docker stop -t 1 $cont
 function start () {
 	prepare
 	echo -e "\n*****Start the container*****"
-	echo "If launched successfully, the container will accept connections:" 
-	if [[ $SSH == true ]]; then
-		echo "on SSH-port ${SSH_PORT}"
-	fi
-	echo "on VNC-port ${VNC_PORT}"
-	
+	docker pull "${DOCKER_IMAGE}"
 	docker run --detach \
 	--rm \
 	-v $HOME_PATH:/home/wineuser \
@@ -104,6 +99,12 @@ function start () {
 	--env="PSW=${PSW}" \
 	--env="CONFIG_PATH=${CONFIG_PATH}" \
 	"${DOCKER_IMAGE}"
+	
+	echo "If launched successfully, the container will accept connections:" 
+	if [[ $SSH == true ]]; then
+		echo "on SSH-port ${SSH_PORT}"
+	fi
+	echo "on VNC-port ${VNC_PORT}"
 }
 
 
