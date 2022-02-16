@@ -38,6 +38,6 @@ sudo ./winerun prepare - подготовка домашней директор�
 Также домашней директории присутствует bash-скрипт *autostart.sh*. В него можно добавить любые команды для автозапуска, в стандартном формате оболочки bash-shell.
 
 # PS: Адреса для доната
-Tron: **TLxWEnUodNVF7H3ocQUHU63V9RfaDryTMC**
+Tron: **TAqc97xdui2bsHJSsza41GEHMKcwn8nXq9**
 
 BTT in-app: **BJqm3sy19jWOuRDCbG6QhMU5p3XuqupGrE7X2tEM+eqikjrrSEB2YM44Sa1tD0uqEoGMxRT5kihl/8ATkOZnz9E=**
